@@ -11,7 +11,6 @@ import {
 export type RepoRef = { owner: string; repo: string; ref: string };
 
 export function parseGitHubUrl(url: string): RepoRef {
-  // Accept: https://github.com/owner/repo[/tree/<ref>] or git://...
   const u = new URL(url);
   if (u.hostname !== "github.com")
     throw new Error("Only github.com URLs are supported");

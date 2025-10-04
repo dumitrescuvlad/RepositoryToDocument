@@ -1,25 +1,25 @@
-# --- Node / package managers ---
+
 node_modules/
 .pnp
 .pnp.*
-# Yarn berry directories (safe to leave even if you use npm)
+
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
 
-# --- Testing / coverage ---
+
 coverage/
 
-# --- Next.js builds ---
+
 .next/
 .next/cache/
 out/
 build/
 dist/
 
-# --- Logs ---
+
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -27,19 +27,18 @@ yarn-error.log*
 pnpm-debug.log*
 .pnpm-debug.log*
 
-# --- Env & secrets ---
+
 .env*
 !.env.local.example     # keep the example, ignore real env files
 
-# --- Deploy / platform ---
+
 .vercel/
 
-# --- TypeScript caches ---
-*.tsbuildinfo
-# DO NOT ignore next-env.d.ts; commit it
-# next-env.d.ts
 
-# --- OS / editors ---
+*.tsbuildinfo
+
+
+
 .DS_Store
 Thumbs.db
 .vscode/

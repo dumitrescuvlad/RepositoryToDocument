@@ -35,7 +35,6 @@ export async function POST(req: NextRequest) {
     // Retrieve top-K per section
     const retrieved = await retrievePerSection(embedded);
 
-    // (Optional) Try to read HEAD commit sha via zip top folder name.
     const commitSha = undefined;
 
     // LLM structured output

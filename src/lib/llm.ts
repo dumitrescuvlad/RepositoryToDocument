@@ -6,17 +6,14 @@ import { DocPackSchema, DocPack } from "./schema";
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
 const LLM_MODEL = process.env.OLLAMA_LLM_MODEL ?? "qwen3:8b";
 
-// Setup AJV
 const ajv = new Ajv2020({
   allErrors: true,
   strictSchema: false,
 });
 addFormats(ajv);
 
-// Compile once
 const validateDocPack = ajv.compile(DocPackSchema);
 
-/** ---------- Type guards ---------- */
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null;
 }
@@ -37,7 +34,6 @@ function isDocPackWrapper(o: unknown): o is { doc_pack: unknown } {
   );
 }
 
-// Sanitizers for common LLM drifts
 function ensureString(v: unknown, fallback = "Unknown"): string {
   return isString(v) ? v : fallback;
 }
@@ -103,24 +99,20 @@ function sanitizeCitations(v: unknown): {
 function sanitizeDocPackCandidate(o: unknown): unknown {
   if (!isRecord(o)) return o;
 
-  // architecture.key_components: array of objects -> coerce strings to objects
   if (isRecord(o.architecture)) {
     const arch = o.architecture as Record<string, unknown>;
     if (arch.key_components !== undefined) {
       arch.key_components = sanitizeKeyComponents(arch.key_components);
     }
-    // ensure overview is a string
     if (arch.overview !== undefined) {
       arch.overview = ensureString(arch.overview, "Unknown");
     }
   }
 
-  // citations: array of objects -> coerce strings
   if (o.citations !== undefined) {
     o.citations = sanitizeCitations(o.citations);
   }
 
-  // how_to_run: ensure nested arrays of strings
   if (isRecord(o.how_to_run)) {
     const htr = o.how_to_run as Record<string, unknown>;
     for (const k of ["prerequisites", "install_steps", "run_steps"] as const) {
@@ -133,7 +125,6 @@ function sanitizeDocPackCandidate(o: unknown): unknown {
     }
   }
 
-  // tech_stack: ensure arrays of strings
   if (isRecord(o.tech_stack)) {
     const ts = o.tech_stack as Record<string, unknown>;
     for (const k of ["languages", "frameworks", "libraries"] as const) {
@@ -146,7 +137,6 @@ function sanitizeDocPackCandidate(o: unknown): unknown {
     }
   }
 
-  // features, security_notes, limitations: arrays of strings
   for (const k of ["features", "security_notes", "limitations"] as const) {
     const val = (o as Record<string, unknown>)[k];
     if (isArray(val)) {
@@ -158,7 +148,6 @@ function sanitizeDocPackCandidate(o: unknown): unknown {
     }
   }
 
-  // summary: ensure strings
   if (isRecord(o.summary)) {
     const sum = o.summary as Record<string, unknown>;
     sum.name = ensureString(sum.name, "Unknown");
@@ -166,7 +155,6 @@ function sanitizeDocPackCandidate(o: unknown): unknown {
     sum.description = ensureString(sum.description, "Unknown");
   }
 
-  // meta: ensure required strings exist if present
   if (isRecord(o.meta)) {
     const m = o.meta as Record<string, unknown>;
     m.owner = ensureString(m.owner, "Unknown");
@@ -181,7 +169,6 @@ function sanitizeDocPackCandidate(o: unknown): unknown {
   return o;
 }
 
-// Helpers
 function unwrapIfDocPack(o: unknown): unknown {
   return isDocPackWrapper(o) ? o.doc_pack : o;
 }
@@ -194,7 +181,6 @@ function validate(json: unknown): {
   return ok ? { ok: true } : { ok: false, errors: validateDocPack.errors };
 }
 
-// Build for the model
 function buildSkeleton(meta: {
   owner: string;
   repo: string;
@@ -236,7 +222,6 @@ function buildSkeleton(meta: {
   };
 }
 
-// Main
 export async function callStructuredDocPackLLM(input: {
   meta: {
     owner: string;
@@ -298,7 +283,6 @@ Return ONLY the SKELETON object with VALUES edited based on the SNIPPETS.
 - Fill strings/arrays using only information in SNIPPETS; use "Unknown" or [] when not present.
 `.trim();
 
-  // First attempt
   let first = await ollamaGenerateJson(system, user);
   first = unwrapIfDocPack(first);
   first = sanitizeDocPackCandidate(first);
@@ -333,7 +317,6 @@ ${JSON.stringify(skeleton, null, 2)}
   return second as DocPack;
 }
 
-// Ollama wrapper
 type OllamaGenerateResponse = { response: unknown };
 
 async function ollamaGenerateJson(
@@ -350,7 +333,6 @@ async function ollamaGenerateJson(
       stream: false,
       options: {
         temperature: 0.2,
-        // num_ctx: 8192, // uncomment if you need a larger context window
       },
     }),
   });
