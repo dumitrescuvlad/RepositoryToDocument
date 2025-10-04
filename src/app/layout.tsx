@@ -1,6 +1,9 @@
-export const metadata = {
-  title: "Repo → Docs (Local LLM)",
-  description: "Generate grounded docs from any public GitHub repo.",
+import "./globals.css";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Repo → Docs",
+  description: "Github repository to documentation.",
 };
 
 export default function RootLayout({
@@ -10,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="min-h-dvh">{children}</body>
     </html>
   );
 }
